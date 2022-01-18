@@ -1,15 +1,16 @@
 import sacn
 import time
 from PIL import Image
+from PIL import ImageEnhance
 
 ip_address = "192.168.1.81"
-filename = "fire.gif"
+filename = "images/fire2.gif"
 
 width=16
 height = 16
 matrix_size = (width,height)
 
-frame_pause = 0.5
+frame_pause = 0.3
 
 def generate_image_data(image):
     image_data = []
@@ -48,10 +49,15 @@ img = Image.open(filename)
 img.seek(1)
 out_imgs = []
 out_datas = []
+
+
 try:
    while 1:
       this_img = img.resize(matrix_size)
-      out_datas.append(generate_image_data_palette(this_img))
+      rgb_img = this_img.convert('RGB')
+      converter = ImageEnhance.Color(rgb_img)
+      bright_img = converter.enhance(3)
+      out_datas.append(generate_image_data(bright_img))
       img.seek(img.tell() + 1)
 except EOFError:
    pass
@@ -63,12 +69,12 @@ sender.activate_output(1)
 sender[1].destination = ip_address
 sender.activate_output(2)
 sender[2].destination = ip_address
-sender.manual_flush = True
 
-for i in range(5):
+
+for i in range(2):
     for data in out_datas:
         send_two_universes(data, sender)
-        sender.flush()
+
         time.sleep(frame_pause)
     
 sender.stop()
